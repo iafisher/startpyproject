@@ -1,0 +1,35 @@
+#!/bin/bash
+
+set -e
+
+if [[ -n $1 ]]; then
+  PACKAGE="$1"
+else
+  echo "Usage: $0 <package-name>"
+  exit 1
+fi
+
+SCRIPT_DIR=$(dirname $0)
+
+echo "Creating git repository"
+git init
+
+echo "Copying .gitignore template"
+cp "$SCRIPT_DIR/gitignore-template" .gitignore
+
+echo "Copying .flake8 template"
+cp "$SCRIPT_DIR/flake8-template" .flake8
+
+echo "Copying .git/hooks/pre-commit template"
+sed "s/REPLACE_ME/$PACKAGE/g" "$SCRIPT_DIR/pre-commit-template" > .git/hooks/pre-commit
+
+echo "Creating package directory"
+mkdir "$PACKAGE"
+touch "$PACKAGE/__init__.py"
+
+echo "Creating test directory"
+mkdir test
+touch test/__init__.py
+
+echo "Creating virtual environment"
+virtualenv .venv --python=python3
