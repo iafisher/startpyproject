@@ -11,25 +11,69 @@ fi
 
 SCRIPT_DIR=$(dirname $0)
 
-echo "Creating git repository"
+echo "[startpyproject] Creating git repository"
 git init
 
-echo "Copying .gitignore template"
-cp "$SCRIPT_DIR/gitignore-template" .gitignore
+echo "[startpyproject] Copying .gitignore template"
+cat << EOF > .gitignore
+__pycache__
+*.pyc
+*.pyo
+.mypy_cache
+.pytest_cache
+.venv
+*.egg-info
+/build
+/dist
+.coverage
 
-echo "Copying .flake8 template"
-cp "$SCRIPT_DIR/flake8-template" .flake8
+*.swp
+*~
+.DS_Store
+EOF
 
-echo "Copying .git/hooks/pre-commit template"
-sed "s/REPLACE_ME/$PACKAGE/g" "$SCRIPT_DIR/pre-commit-template" > .git/hooks/pre-commit
+echo "[startpyproject] Copying .flake8 template"
+cat << EOF > .flake8
+[flake8]
+max-line-length = 88
+exclude = .git, __pycache__, __init__py
+# Mostly ignore things that black inserts
+ignore =
+    # E203 whitespace before ':'
+    E203,
+    # W503 line break before binary operator
+    W503,
+    # W293 blank line contains whitespace (sometimes we need it in string literals,
+    # and black will catch it anyway)
+    W293,
+    # E501 line too long
+    E501,
+EOF
 
-echo "Creating package directory"
+echo "[startpyproject] Copying .git/hooks/pre-commit template"
+cat << EOF > .git/hooks/pre-commit
+#!/bin/sh
+#
+# Called by "git commit" with no arguments.  The hook should
+# exit with non-zero status after issuing an appropriate message if
+# it wants to stop the commit.
+#
+# To enable this hook, rename this file to "pre-commit".
+
+black --check "$PACKAGE" test && \
+  flake8 "$PACKAGE" test
+EOF
+chmod +x .git/hooks/pre-commit
+
+echo "[startpyproject] Creating package directory"
 mkdir "$PACKAGE"
 touch "$PACKAGE/__init__.py"
 
-echo "Creating test directory"
+echo "[startpyproject] Creating test directory"
 mkdir test
 touch test/__init__.py
 
-echo "Creating virtual environment"
+echo "[startpyproject] Creating virtual environment"
 virtualenv .venv --python=python3
+
+echo "[startpyproject] All done!"
