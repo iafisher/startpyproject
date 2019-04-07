@@ -13,3 +13,6 @@ usage is
     $ mkdir my-python-project
     $ cd my-python-project
     $ startpyproject my_package_name
+
+The startpyproject script is self-contained. Simply drop it anywhere on your
+PATH.
