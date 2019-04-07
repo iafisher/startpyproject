@@ -1,4 +1,26 @@
 #!/bin/bash
+# startpyproject: Auto-generate a boilerplate Python project.
+# 
+# Does the following:
+#   - Initializes a git repo with a Python-tailored .gitignore.
+#   - Sets up a pre-commit hook for git that runs black and flake8.
+#   - Creates a flake8 configuration file.
+#   - Creates directories for the main package and the test package.
+#   - Creates a virtual environment.
+# 
+# Make sure to run the script in the already-created project directory. Typical
+# usage is
+# 
+#     $ mkdir my-python-project
+#     $ cd my-python-project
+#     $ startpyproject my_package_name
+# 
+# The startpyproject script is self-contained. Simply drop it anywhere on your
+# PATH.
+#
+# Author:  Ian Fisher (iafisher@protonmail.com)
+# Version: April 2019
+# Online:  https://github.com/iafisher/startpyproject
 
 set -e
 
@@ -8,8 +30,6 @@ else
   echo "Usage: $0 <package-name>"
   exit 1
 fi
-
-SCRIPT_DIR=$(dirname $0)
 
 echo "[startpyproject] Creating git repository"
 git init
@@ -37,7 +57,7 @@ cat << EOF > .flake8
 [flake8]
 max-line-length = 88
 exclude = .git, __pycache__, __init__py
-# Mostly ignore things that black inserts
+# Ignore errors that black handles or creates (e.g., E203).
 ignore =
     # E203 whitespace before ':'
     E203,
@@ -57,9 +77,8 @@ cat << EOF > .git/hooks/pre-commit
 # Called by "git commit" with no arguments.  The hook should
 # exit with non-zero status after issuing an appropriate message if
 # it wants to stop the commit.
-#
-# To enable this hook, rename this file to "pre-commit".
 
+# Run black and flake8 on the main and test packages.
 black --check "$PACKAGE" test && \
   flake8 "$PACKAGE" test
 EOF

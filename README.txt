@@ -1,4 +1,4 @@
-A small bash script to initialize a new Python project.
+startpyproject: Auto-generate a boilerplate Python project.
 
 Does the following:
   - Initializes a git repo with a Python-tailored .gitignore.
