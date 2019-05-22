@@ -30,32 +30,47 @@ usage() {
   echo "Usage: $0 [options] package"
   echo
   echo "Options:"
-  echo "  --help      Display a help message."
+  echo "  -p, --package name    Create a package with the given name."
+  echo "  --help                Display a help message."
 }
 
 
 # Parse command-line options.
+declare -a args
 for opt in "$@"; do
-  if [[ "$opt" = --help ]]; then
-    OPT_HELP=yes
-  else
-    if [[ -n "$OPT_PACKAGE" ]]; then
-      ERROR=yes
-      break
-    else
-      OPT_PACKAGE=$opt
-    fi
-  fi
+  args[${#args[*]}]=$opt
 done
 
+i=0
+while [[ "$i" -lt ${#args[*]} ]]; do
+  opt=${args[$i]}
 
-# Handle errors in parsing.
-if [[ -n "$ERROR" ]]; then
-  echo "Error: could not parse command-line options."
-  echo
-  usage
-  exit 1
-fi
+  # --help
+  if [[ "$opt" = --help ]]; then
+    OPT_HELP=yes
+
+  # -p, --package
+  elif [[ "$opt" = -p ]] || [[ "$opt" = --package ]]; then
+    if [[ "$i" -eq $((${#args[*]} - 1)) ]]; then
+      echo "Error: $opt flag without argument."
+      echo
+      usage
+      exit 1
+    fi
+
+    OPT_PACKAGE=${args[$((i + 1))]}
+    i=$((i + 1))
+
+  # Other options
+  else
+    echo "Error: unrecogized option $opt."
+    echo
+    usage
+    exit 1
+  fi
+
+  i=$((i + 1))
+done
 
 
 if [[ -n "$OPT_HELP" ]]; then
@@ -121,14 +136,16 @@ EOF
 chmod +x .git/hooks/pre-commit
 
 
-echo "[startpyproject] Creating package directory"
-mkdir "$OPT_PACKAGE"
-touch "$OPT_PACKAGE/__init__.py"
+if [[ -n "$OPT_PACKAGE" ]]; then
+  echo "[startpyproject] Creating package directory"
+  mkdir "$OPT_PACKAGE"
+  touch "$OPT_PACKAGE/__init__.py"
 
 
-echo "[startpyproject] Creating test directory"
-mkdir test
-touch test/__init__.py
+  echo "[startpyproject] Creating test directory"
+  mkdir test
+  touch test/__init__.py
+fi
 
 
 echo "[startpyproject] Creating virtual environment"

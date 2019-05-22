@@ -1,3 +1,5 @@
 # Note: this is the gitignore file for the startpyproject repo itself. The
 # template that the startpyproject script uses is an inline heredoc.
 *.swp
+
+/sandbox
