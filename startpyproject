@@ -26,11 +26,41 @@
 set -e
 
 
-if [[ -n $1 ]]; then
-  PACKAGE="$1"
-else
-  echo "Usage: $0 <package-name>"
+usage() {
+  echo "Usage: $0 [options] package"
+  echo
+  echo "Options:"
+  echo "  --help      Display a help message."
+}
+
+
+# Parse command-line options.
+for opt in "$@"; do
+  if [[ "$opt" = --help ]]; then
+    OPT_HELP=yes
+  else
+    if [[ -n "$OPT_PACKAGE" ]]; then
+      ERROR=yes
+      break
+    else
+      OPT_PACKAGE=$opt
+    fi
+  fi
+done
+
+
+# Handle errors in parsing.
+if [[ -n "$ERROR" ]]; then
+  echo "Error: could not parse command-line options."
+  echo
+  usage
   exit 1
+fi
+
+
+if [[ -n "$OPT_HELP" ]]; then
+  usage
+  exit
 fi
 
 
@@ -92,8 +122,8 @@ chmod +x .git/hooks/pre-commit
 
 
 echo "[startpyproject] Creating package directory"
-mkdir "$PACKAGE"
-touch "$PACKAGE/__init__.py"
+mkdir "$OPT_PACKAGE"
+touch "$OPT_PACKAGE/__init__.py"
 
 
 echo "[startpyproject] Creating test directory"
