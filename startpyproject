@@ -36,40 +36,32 @@ usage() {
 
 
 # Parse command-line options.
-declare -a args
-for opt in "$@"; do
-  args[${#args[*]}]=$opt
-done
+while [[ "$#" -gt 0 ]]; do
+  case "$1" in
+    -p|--package)
+      if [[ "$#" -eq 1 ]]; then
+        echo "Error: $1 flag without argument."
+        echo
+        usage
+        exit 1
+      fi
+      shift
+      OPT_PACKAGE=$1
+      ;;
 
-i=0
-while [[ "$i" -lt ${#args[*]} ]]; do
-  opt=${args[$i]}
+    -h|--help)
+      OPT_HELP=yes
+      ;;
 
-  # --help
-  if [[ "$opt" = --help ]]; then
-    OPT_HELP=yes
-
-  # -p, --package
-  elif [[ "$opt" = -p ]] || [[ "$opt" = --package ]]; then
-    if [[ "$i" -eq $((${#args[*]} - 1)) ]]; then
-      echo "Error: $opt flag without argument."
+    *)
+      echo "Error: unknown option $1."
       echo
       usage
       exit 1
-    fi
+      ;;
+  esac
 
-    OPT_PACKAGE=${args[$((i + 1))]}
-    i=$((i + 1))
-
-  # Other options
-  else
-    echo "Error: unrecogized option $opt."
-    echo
-    usage
-    exit 1
-  fi
-
-  i=$((i + 1))
+  shift
 done
 
 
