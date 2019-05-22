@@ -1,12 +1,13 @@
 #!/bin/bash
 # startpyproject: Auto-generate a boilerplate Python project.
 # 
-# Does the following:
+# startpyproject does the following:
 #   - Initializes a git repo with a .gitignore that's tailored for Python.
 #   - Sets up a pre-commit hook for git that runs black and flake8.
 #   - Creates a flake8 configuration file.
 #   - Creates directories for the main package and the test package.
 #   - Creates a virtual environment.
+#   - (Optional) Creates a new Django project.
 # 
 # Make sure to run the script in the already-created project directory.
 # Typical usage is
@@ -15,8 +16,8 @@
 #     $ cd my-python-project
 #     $ startpyproject my_package_name
 # 
-# The startpyproject script is self-contained. Simply drop it anywhere on your
-# PATH.
+# The startpyproject script is self-contained. Simply drop it anywhere on
+# your PATH.
 #
 # Author:  Ian Fisher (iafisher@protonmail.com)
 # Version: May 2019
@@ -31,6 +32,7 @@ usage() {
   echo
   echo "Options:"
   echo "  -p, --package name    Create a package with the given name."
+  echo "  --django name         Create a Django project with the given name."
   echo "  --help                Display a help message."
 }
 
