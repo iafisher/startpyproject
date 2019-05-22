@@ -35,18 +35,41 @@ usage() {
 }
 
 
+error() {
+  echo "Error: $1"
+  echo
+  usage
+  exit 1
+}
+
+
+status() {
+  echo
+  echo "[startpyproject] $1"
+}
+
+
+# require_arg "$1" "$2" is the normal usage. Enforces that "$2" is non-empty.
+require_arg() {
+  if [[ -z "$2" ]]; then
+    error "$1 flag without argument."
+  fi
+}
+
+
 # Parse command-line options.
 while [[ "$#" -gt 0 ]]; do
   case "$1" in
     -p|--package)
-      if [[ "$#" -eq 1 ]]; then
-        echo "Error: $1 flag without argument."
-        echo
-        usage
-        exit 1
-      fi
+      require_arg "$1" "$2"
       shift
       OPT_PACKAGE=$1
+      ;;
+
+    --django)
+      require_arg "$1" "$2"
+      shift
+      OPT_DJANGO=$1
       ;;
 
     -h|--help)
@@ -54,15 +77,17 @@ while [[ "$#" -gt 0 ]]; do
       ;;
 
     *)
-      echo "Error: unknown option $1."
-      echo
-      usage
-      exit 1
+      error "unknown option $1."
       ;;
   esac
 
   shift
 done
+
+
+if [[ -n "$OPT_PACKAGE" ]] && [[ -n "$OPT_DJANGO" ]]; then
+  error "--package and --django are incompatible."
+fi
 
 
 if [[ -n "$OPT_HELP" ]]; then
@@ -71,11 +96,11 @@ if [[ -n "$OPT_HELP" ]]; then
 fi
 
 
-echo "[startpyproject] Creating git repository"
+status "Creating git repository"
 git init
 
 
-echo "[startpyproject] Creating .gitignore"
+status "Creating .gitignore"
 cat << EOF > .gitignore
 __pycache__
 *.pyc
@@ -94,7 +119,7 @@ __pycache__
 EOF
 
 
-echo "[startpyproject] Creating .flake8"
+status "Creating .flake8"
 cat << EOF > .flake8
 [flake8]
 max-line-length = 88
@@ -113,7 +138,7 @@ ignore =
 EOF
 
 
-echo "[startpyproject] Creating .git/hooks/pre-commit"
+status "Creating .git/hooks/pre-commit"
 cat << EOF > .git/hooks/pre-commit
 #!/bin/sh
 
@@ -129,19 +154,32 @@ chmod +x .git/hooks/pre-commit
 
 
 if [[ -n "$OPT_PACKAGE" ]]; then
-  echo "[startpyproject] Creating package directory"
+  status "Creating package directory"
   mkdir "$OPT_PACKAGE"
   touch "$OPT_PACKAGE/__init__.py"
 
 
-  echo "[startpyproject] Creating test directory"
+  status "Creating test directory"
   mkdir test
   touch test/__init__.py
 fi
 
 
-echo "[startpyproject] Creating virtual environment"
+status "Creating virtual environment"
 virtualenv .venv --python=python3
 
 
-echo "[startpyproject] All done!"
+if [[ -n "$OPT_DJANGO" ]]; then
+  status "Installing Django"
+  .venv/bin/pip3 install Django
+
+  status "Initializing Django project"
+  .venv/bin/django-admin startproject "$OPT_DJANGO" .
+  black "$OPT_DJANGO" manage.py
+
+  status "Generating requirements.txt"
+  .venv/bin/pip3 freeze > requirements.txt
+fi
+
+
+status "All done!"
