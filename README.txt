@@ -1,7 +1,7 @@
 startpyproject: Auto-generate a boilerplate Python project.
 
 Does the following:
-  - Initializes a git repo with a Python-tailored .gitignore.
+  - Initializes a git repo with a .gitignore that's tailored for Python.
   - Sets up a pre-commit hook for git that runs black and flake8.
   - Creates a flake8 configuration file.
   - Creates directories for the main package and the test package.

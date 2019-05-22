@@ -2,14 +2,14 @@
 # startpyproject: Auto-generate a boilerplate Python project.
 # 
 # Does the following:
-#   - Initializes a git repo with a Python-tailored .gitignore.
+#   - Initializes a git repo with a .gitignore that's tailored for Python.
 #   - Sets up a pre-commit hook for git that runs black and flake8.
 #   - Creates a flake8 configuration file.
 #   - Creates directories for the main package and the test package.
 #   - Creates a virtual environment.
 # 
-# Make sure to run the script in the already-created project directory. Typical
-# usage is
+# Make sure to run the script in the already-created project directory.
+# Typical usage is
 # 
 #     $ mkdir my-python-project
 #     $ cd my-python-project
@@ -19,10 +19,12 @@
 # PATH.
 #
 # Author:  Ian Fisher (iafisher@protonmail.com)
-# Version: April 2019
+# Version: May 2019
 # Online:  https://github.com/iafisher/startpyproject
 
+
 set -e
+
 
 if [[ -n $1 ]]; then
   PACKAGE="$1"
@@ -31,10 +33,12 @@ else
   exit 1
 fi
 
+
 echo "[startpyproject] Creating git repository"
 git init
 
-echo "[startpyproject] Copying .gitignore template"
+
+echo "[startpyproject] Creating .gitignore"
 cat << EOF > .gitignore
 __pycache__
 *.pyc
@@ -52,7 +56,8 @@ __pycache__
 .DS_Store
 EOF
 
-echo "[startpyproject] Copying .flake8 template"
+
+echo "[startpyproject] Creating .flake8"
 cat << EOF > .flake8
 [flake8]
 max-line-length = 88
@@ -63,36 +68,41 @@ ignore =
     E203,
     # W503 line break before binary operator
     W503,
-    # W293 blank line contains whitespace (sometimes we need it in string literals,
-    # and black will catch it anyway)
+    # W293 blank line contains whitespace (sometimes we need it in string
+    # literals, and black will catch it anyway)
     W293,
     # E501 line too long
     E501,
 EOF
 
-echo "[startpyproject] Copying .git/hooks/pre-commit template"
+
+echo "[startpyproject] Creating .git/hooks/pre-commit"
 cat << EOF > .git/hooks/pre-commit
 #!/bin/sh
-#
-# Called by "git commit" with no arguments.  The hook should
-# exit with non-zero status after issuing an appropriate message if
-# it wants to stop the commit.
 
-# Run black and flake8 on the main and test packages.
-black --check "$PACKAGE" test && \
-  flake8 "$PACKAGE" test
+set -e
+
+# Find all Python files, ignoring the virtual environment, and run black and
+# flake8 on them.
+PY=$(find . -path ./.venv -prune -o -name "*.py" -print)
+black --check $PY
+flake8 $PY
 EOF
 chmod +x .git/hooks/pre-commit
+
 
 echo "[startpyproject] Creating package directory"
 mkdir "$PACKAGE"
 touch "$PACKAGE/__init__.py"
 
+
 echo "[startpyproject] Creating test directory"
 mkdir test
 touch test/__init__.py
 
+
 echo "[startpyproject] Creating virtual environment"
 virtualenv .venv --python=python3
+
 
 echo "[startpyproject] All done!"
