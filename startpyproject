@@ -100,6 +100,21 @@ if [[ -n "$OPT_PACKAGE" ]] && [[ -n "$OPT_DJANGO" ]]; then
   error "--package and --django are incompatible."
 fi
 
+if ! which git &> /dev/null; then
+  echo "Error: git is not installed."
+  exit 2
+fi
+
+if [[ -z "$OPT_NO_VENV" ]] && ! which virtualenv &> /dev/null; then
+  echo "Error: virtualenv is not installed."
+  exit 2
+fi
+
+if [[ -n "$OPT_NO_VENV" ]] && ! which pip3 &> /dev/null; then
+  echo "Error: pip3 is not installed."
+  exit 2
+fi
+
 if [[ -n "$OPT_NO_VENV" ]] && [[ -n "$OPT_DJANGO" ]]; then
   echo -n "Are you sure you want to install Django without a virtual environment? "
   read yesno
@@ -205,7 +220,11 @@ if [[ -n "$OPT_DJANGO" ]]; then
 
   status "Initializing Django project"
   $mydjango startproject "$OPT_DJANGO" .
-  black "$OPT_DJANGO" manage.py
+  # Since some of Django's starter files do not conform to black style, run
+  # black on them after creation (but only if black is installed).
+  if which black &> /dev/null; then
+    black "$OPT_DJANGO" manage.py
+  fi
 
   status "Generating requirements.txt"
   $mypip freeze > requirements.txt
