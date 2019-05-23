@@ -16,4 +16,8 @@ Typical usage is
     $ startpyproject -p mypackage
 
 The startpyproject script is self-contained. Simply drop it anywhere on
-your PATH.
+your PATH. Run
+
+    $ startpyproject --help
+
+for documentation of command-line options.

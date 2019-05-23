@@ -17,7 +17,11 @@
 #     $ startpyproject -p mypackage
 # 
 # The startpyproject script is self-contained. Simply drop it anywhere on
-# your PATH.
+# your PATH. Run
+#
+#     $ startpyproject --help
+#
+# for documentation of command-line options.
 #
 # Author:  Ian Fisher (iafisher@protonmail.com)
 # Version: May 2019
@@ -33,6 +37,7 @@ usage() {
   echo "Options:"
   echo "  -p, --package name    Create a package with the given name."
   echo "  --django name         Create a Django project with the given name."
+  echo "  --no-venv             Do not create a virtual environment."
   echo "  --help                Display a help message."
 }
 
@@ -74,6 +79,10 @@ while [[ "$#" -gt 0 ]]; do
       OPT_DJANGO=$1
       ;;
 
+    --no-venv)
+      OPT_NO_VENV=yes
+      ;;
+
     -h|--help)
       OPT_HELP=yes
       ;;
@@ -89,6 +98,15 @@ done
 
 if [[ -n "$OPT_PACKAGE" ]] && [[ -n "$OPT_DJANGO" ]]; then
   error "--package and --django are incompatible."
+fi
+
+if [[ -n "$OPT_NO_VENV" ]] && [[ -n "$OPT_DJANGO" ]]; then
+  echo -n "Are you sure you want to install Django without a virtual environment? "
+  read yesno
+  case "$yesno" in
+    y|yes) ;;
+    *) exit ;;
+  esac
 fi
 
 
@@ -167,20 +185,30 @@ if [[ -n "$OPT_PACKAGE" ]]; then
 fi
 
 
-status "Creating virtual environment"
-virtualenv .venv --python=python3
+if [[ -z "$OPT_NO_VENV" ]]; then
+  status "Creating virtual environment"
+  virtualenv .venv --python=python3
+fi
 
 
 if [[ -n "$OPT_DJANGO" ]]; then
+  if [[ -z "$OPT_NO_VENV" ]]; then
+    mypip=.venv/bin/pip3
+    mydjango=.venv/bin/django-admin
+  else
+    mypip=pip3
+    mydjango=django-admin
+  fi
+
   status "Installing Django"
-  .venv/bin/pip3 install Django
+  $mypip install Django
 
   status "Initializing Django project"
-  .venv/bin/django-admin startproject "$OPT_DJANGO" .
+  $mydjango startproject "$OPT_DJANGO" .
   black "$OPT_DJANGO" manage.py
 
   status "Generating requirements.txt"
-  .venv/bin/pip3 freeze > requirements.txt
+  $mypip freeze > requirements.txt
 fi
 
 
