@@ -188,9 +188,9 @@ set -e
 
 # Find all Python files, ignoring the virtual environment, and run black and
 # flake8 on them.
-PY=$(find . -path ./.venv -prune -o -name "*.py" -print)
-black --check $PY
-flake8 $PY
+PY=\$(find . -path ./.venv -prune -o -name "*.py" -print)
+black --check \$PY
+flake8 \$PY
 EOF
   chmod +x .git/hooks/pre-commit
 fi
