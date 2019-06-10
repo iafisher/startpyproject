@@ -32,14 +32,14 @@ set -e
 
 
 usage() {
-  echo "Usage: $0 [options] package"
+  echo "Usage: $0 [options]"
   echo
   echo "Options:"
-  echo "  -p, --package name    Create a package with the given name."
-  echo "  --django name         Create a Django project with the given name."
-  echo "  --no-git              Do not initialize a Git repository."
-  echo "  --no-venv             Do not create a virtual environment."
-  echo "  --help                Display a help message."
+  echo "  -p, --package [name]    Create a package with the given name."
+  echo "  --django [name]         Create a Django project with the given name."
+  echo "  --no-git                Do not initialize a Git repository."
+  echo "  --no-venv               Do not create a virtual environment."
+  echo "  --help                  Display a help message."
 }
 
 
