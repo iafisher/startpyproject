@@ -199,6 +199,13 @@ __pycache__
 *~
 .DS_Store
 EOF
+
+  if [[ -n "$OPT_DJANGO" ]]; then
+    cat << EOF >> .gitignore
+
+*.sqlite3
+EOF
+  fi
 fi
 
 
