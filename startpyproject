@@ -165,7 +165,7 @@ if [[ -n "$OPT_NO_VENV" ]] && ! which pip3 &> /dev/null; then
 fi
 
 if [[ ! -e "$OPT_DIR" ]]; then
-  error "Directory '$OPT_DIR' does not exist."
+  mkdir -p "$OPT_DIR"
 fi
 
 if [[ ! -z "$(ls -A "$OPT_DIR")" ]]; then
@@ -175,6 +175,8 @@ fi
 if [[ -n "$OPT_NO_VENV" ]] && [[ -n "$OPT_DJANGO" ]]; then
   confirm "Are you sure you want to install Django without a virtual environment? "
 fi
+
+cd "$OPT_DIR"
 
 if [[ -z "$OPT_NO_GIT" ]]; then
   status "Creating git repository"
