@@ -8,16 +8,19 @@ startpyproject can do the following:
   - Create directories for a main package and a test package.
   - Create a new Django project.
 
-Make sure to run the script in the already-created project directory.
-Typical usage is
+Example uses:
 
-    $ mkdir myproject
-    $ cd myproject
-    $ startpyproject -p mypackage
+    # Create a project in a new directory.
+    $ startpyproject myproject
 
-The startpyproject script is self-contained. Simply drop it anywhere on
-your PATH. Run
+    # Initialize a project in the current directory.
+    $ startpyproject
 
+    # Create a Django project.
+    $ startpyproject --django mysite
+
+    # Get help.
     $ startpyproject --help
 
-for documentation of command-line options.
+The startpyproject script is self-contained. Simply drop it anywhere on
+your PATH.

@@ -1,6 +1,6 @@
 #!/bin/bash
 # startpyproject: Generate the boilerplate for a new Python project.
-# 
+#
 # startpyproject can do the following:
 #   - Initialize a git repo with a .gitignore that's tailored for Python.
 #   - Set up a pre-commit hook for git that runs black and flake8.
@@ -8,23 +8,26 @@
 #   - Create a virtual environment.
 #   - Create directories for a main package and a test package.
 #   - Create a new Django project.
-# 
-# Make sure to run the script in the already-created project directory.
-# Typical usage is
-# 
-#     $ mkdir myproject
-#     $ cd myproject
-#     $ startpyproject -p mypackage
-# 
-# The startpyproject script is self-contained. Simply drop it anywhere on
-# your PATH. Run
 #
+# Example uses:
+#
+#     # Create a project in a new directory.
+#     $ startpyproject myproject
+#
+#     # Initialize a project in the current directory.
+#     $ startpyproject
+#
+#     # Create a Django project.
+#     $ startpyproject --django mysite
+#
+#     # Get help.
 #     $ startpyproject --help
 #
-# for documentation of command-line options.
+# The startpyproject script is self-contained. Simply drop it anywhere on
+# your PATH.
 #
 # Author:  Ian Fisher (iafisher@protonmail.com)
-# Version: May 2019
+# Version: November 2019
 # Online:  https://github.com/iafisher/startpyproject
 
 
@@ -32,7 +35,7 @@ set -e
 
 
 usage() {
-  echo "Usage: $0 [options]"
+  echo "Usage: $0 [options] directory"
   echo
   echo "Options:"
   echo "  -p, --package [name]    Create a package with the given name."
@@ -40,13 +43,23 @@ usage() {
   echo "  --no-git                Do not initialize a Git repository."
   echo "  --no-venv               Do not create a virtual environment."
   echo "  --help                  Display a help message."
+  echo
+  echo "If the directory argument is not provided it defaults to (a) the name"
+  echo "of the Django project if --django is used, or (b) the current working"
+  echo "directory otherwise."
+  echo
+  echo "By default, startpyproject will do the following:"
+  echo "   - Initialize a git repo with a .gitignore that's tailored for Python."
+  echo "   - Create a virtual environment."
+  echo "   - Create a flake8 configuration file."
+  echo "   - Set up a pre-commit hook for git that runs black and flake8."
 }
 
 
 error() {
   echo "Error: $1"
   echo
-  usage
+  echo "Run $0 --help for assistance."
   exit 1
 }
 
@@ -57,7 +70,17 @@ status() {
 }
 
 
-# require_arg "$1" "$2" is the normal usage. Enforces that "$2" is non-empty.
+confirm() {
+  echo -n "$1"
+  read yesno
+  case "$yesno" in
+    y|yes) ;;
+    *) exit ;;
+  esac
+}
+
+
+# `require_arg "$1" "$2"` is the normal usage. Enforces that "$2" is non-empty.
 require_arg() {
   if [[ -z "$2" ]]; then
     error "$1 flag without argument."
@@ -92,14 +115,35 @@ while [[ "$#" -gt 0 ]]; do
       OPT_HELP=yes
       ;;
 
-    *)
+    -*)
       error "unknown option $1."
+      ;;
+
+    *)
+      if [[ -z "$OPT_DIR" ]]; then
+        OPT_DIR=$1
+      else
+        error "extra argument $1."
+      fi
       ;;
   esac
 
   shift
 done
 
+if [[ -z "$OPT_DIR" ]]; then
+  # Default to name of Django project if provided, current directory otherwise.
+  if [[ -z "$OPT_DJANGO" ]]; then
+    OPT_DIR=.
+  else
+    OPT_DIR=$OPT_DJANGO
+  fi
+fi
+
+if [[ -n "$OPT_HELP" ]]; then
+  usage
+  exit
+fi
 
 if [[ -n "$OPT_PACKAGE" ]] && [[ -n "$OPT_DJANGO" ]]; then
   error "--package and --django are incompatible."
@@ -120,21 +164,17 @@ if [[ -n "$OPT_NO_VENV" ]] && ! which pip3 &> /dev/null; then
   exit 2
 fi
 
+if [[ ! -e "$OPT_DIR" ]]; then
+  error "Directory '$OPT_DIR' does not exist."
+fi
+
+if [[ ! -z "$(ls -A "$OPT_DIR")" ]]; then
+  confirm "The directory is not empty. Do you wish to continue? "
+fi
+
 if [[ -n "$OPT_NO_VENV" ]] && [[ -n "$OPT_DJANGO" ]]; then
-  echo -n "Are you sure you want to install Django without a virtual environment? "
-  read yesno
-  case "$yesno" in
-    y|yes) ;;
-    *) exit ;;
-  esac
+  confirm "Are you sure you want to install Django without a virtual environment? "
 fi
-
-
-if [[ -n "$OPT_HELP" ]]; then
-  usage
-  exit
-fi
-
 
 if [[ -z "$OPT_NO_GIT" ]]; then
   status "Creating git repository"
